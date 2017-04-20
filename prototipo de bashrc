@@ -1,0 +1,189 @@
+#montando meus arquivos de configuração do bash, vim, e setup inicial da maquina.
+# referencias:
+# https://www.digitalocean.com/community/tutorials/how-to-use-git-to-manage-your-user-configuration-files-on-a-linux-vps 
+# https://github.com/search?utf8=%E2%9C%93&q=vimrc
+# https://www.digitalocean.com/community/tutorials/an-introduction-to-useful-bash-aliases-and-functions
+
+#other resourcers
+# https://ubuntuforums.org/showthread.php?t=679762
+# https://github.com/raposalorx/script
+# http://stackoverflow.com/questions/188162/what-is-the-most-useful-script-youve-written-for-everyday-life
+# http://serverfault.com/questions/3743/what-useful-things-can-one-add-to-ones-bashrc
+# http://www.dedoimedo.com/computers/linux-cool-hacks.html
+
+# set a python enviroment
+# https://www.digitalocean.com/community/tutorials/how-to-install-python-3-and-set-up-a-local-programming-environment-on-debian-8
+# http://blog.smalleycreative.com/tutorials/using-git-and-github-to-manage-your-dotfiles/
+# https://dotfiles.github.io/
+# https://github.com/KyleAMathews/linux-config
+# 
+
+# session switching
+# http://i3wm.org/docs/layout-saving.html
+# file StartSessionApplications
+
+" You'll have to change some lines: {{{
+
+-Remove. It is used to show messages in a graphical way. In my system 'Dialog_MessageTimed' runs a java program that provides a suite of Dialogs.
+
+echo -e "$*" | Dialog_MessageTimed --title "$CommandName: Error:" --timeout 0 --file - &
+
+-Replace 'DefaultTextEditor' by your favourite editor. In my system there are two abstraction layers: No distro applications are called directly & Paths are given as Environment variables.
+
+DefaultTextEditor "$ListOfCommandsFile"
+
+-Remove the following line endings (Used to log output):
+
+ | CommonLog --echo-out
+ 2>&1 | CommonLog --echo-err
+
+}}}
+
+##########################
+install 
+
+git
+vim
+nmap
+htop
+crontab
+tree
+	
+arduino
+kicad 
+crosstool-ng
+buildroot
+yocto
+
+#########
+
+crosstool-ng
+sudo apt-get install autoconf automake libtool-bin libexpat1-dev \
+libncurses5-dev bison flex patch curl cvs texinfo git bc \
+build-essential subversion gawk python-dev gperf unzip \
+pkg-config help2man wget
+
+git clone https://github.com/crosstool-ng/crosstool-ng.git
+cd crosstool-ng/
+autoreconf
+./configure --enable-local
+make
+make install
+################3
+
+
+setxkbmap -model abnt2 -layout br
+
+
+
+    What are your steps for preserving as many of your configurations as possible?
+
+Posted this a few times before, but here's what works for me.
+
+    I have a nightly rsync job that backs up /etc, /root and my home directory.
+
+    I have a cron job that dumps a list of packages I have installed (and any that have been removed from a default install) to my home directory. I run it nightly and it looks like this:
+
+    dpkg --get-selections > /home/username/installed-programs.txt
+
+Then having restored /home and any files in /root or /etc that may have been altered from the default I make sure my apt sources are the way they should be and do this as root:
+
+apt update
+dpkg --set-selections < /home/username/installed-programs.txt
+apt-get dselect-upgrade
+
+Hope this helps -
+
+outra pessoa:
+dpkg --get-selections > mypackages
+dpkg --set-selections mypackages
+
+
+################################
+history | awk '{CMD[$2]++;count++;}END { for (a in CMD)print CMD[a] " " CMD[a]/count*100 "% " a;}' | grep -v "./" | column -c3 -s " " -t | sort -nr | nl |  head -n10
+
+
+alias ll='ls -alhG'
+alias lsl="ls -lhFA | less"	
+alias fhere="find . -name "
+alias less="less -eirqM"
+function mygrep { grep -rnIi "$1" . --color; }
+alias mkdir="mkdir -pv"
+alias histg="history | grep"
+
+
+alias df="df -Tha --total"
+alias du="du -ach | sort -h"
+# This is GOLD for finding out what is taking so much space on your drives!
+alias diskspace="du -S | sort -n -r |more"
+
+
+alias ps="ps auxf"
+alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
+
+
+alias wget="wget -c"
+alias myip="curl http://ipecho.net/plain; echo"
+alias webify="mogrify -resize 690\> *.png"
+
+mcd () {
+    mkdir -p $1
+    cd $1
+}
+
+function extract {
+ if [ -z "$1" ]; then
+    # display usage if no parameters given
+    echo "Usage: extract <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz>"
+ else
+    if [ -f $1 ] ; then
+        # NAME=${1%.*}
+        # mkdir $NAME && cd $NAME
+        case $1 in
+          *.tar.bz2)   tar xvjf ../$1    ;;
+          *.tar.gz)    tar xvzf ../$1    ;;
+          *.tar.xz)    tar xvJf ../$1    ;;
+          *.lzma)      unlzma ../$1      ;;
+          *.bz2)       bunzip2 ../$1     ;;
+          *.rar)       unrar x -ad ../$1 ;;
+          *.gz)        gunzip ../$1      ;;
+          *.tar)       tar xvf ../$1     ;;
+          *.tbz2)      tar xvjf ../$1    ;;
+          *.tgz)       tar xvzf ../$1    ;;
+          *.zip)       unzip ../$1       ;;
+          *.Z)         uncompress ../$1  ;;
+          *.7z)        7z x ../$1        ;;
+          *.xz)        unxz ../$1        ;;
+          *.exe)       cabextract ../$1  ;;
+          *)           echo "extract: '$1' - unknown archive method" ;;
+        esac
+    else
+        echo "$1 - file does not exist"
+    fi
+fi
+}
+
+
+
+	
+
+Color for manpages in less makes manpages a little easier to read:
+
+export LESS_TERMCAP_mb=$'\E[01;31m'
+export LESS_TERMCAP_md=$'\E[01;31m'
+export LESS_TERMCAP_me=$'\E[0m'
+export LESS_TERMCAP_se=$'\E[0m'
+export LESS_TERMCAP_so=$'\E[01;44;33m'
+export LESS_TERMCAP_ue=$'\E[0m'
+export LESS_TERMCAP_us=$'\E[01;32m'
+
+
+aprender a usar screem
+On a server where I routinely use a large set of screens, my .bashrc will have:
+
+alias s1="screen -dr chaos1"
+alias s2="screen -dr chaos2"
+alias s3="screen -dr chaos3"
+# ... and so on
+
+(The screens were set up with, for example, screen -U -S chaos1.)
